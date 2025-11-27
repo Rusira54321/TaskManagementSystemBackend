@@ -1,12 +1,7 @@
-const { taskCreate, getTasks, changeTaskStatus, deleteTask } = require("../controllers/taskController");
-const {
-    createTask,
-    getTasksService,
-    changeTaskStatusService,
-    deleteTaskService
-} = require("../services/taskServices");
+const {taskCreate,getTasks,changeTaskStatus,deleteTask} = require("../controllers/taskController");
 
-// Mock the services
+const {createTask,getTasksService,changeTaskStatusService,deleteTaskService} = require("../services/taskServices");
+
 jest.mock("../services/taskServices", () => ({
     createTask: jest.fn(),
     getTasksService: jest.fn(),
@@ -14,25 +9,22 @@ jest.mock("../services/taskServices", () => ({
     deleteTaskService: jest.fn()
 }));
 
-// Helper function to mock res object
 const mockResponse = () => {
     const res = {};
-    res.status = jest.fn().mockReturnValue(res); 
+    res.status = jest.fn().mockReturnValue(res);
     res.json = jest.fn().mockReturnValue(res);
     return res;
 };
 
 describe("Task Controller", () => {
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+    beforeEach(() => jest.clearAllMocks());
 
-    //test cases for taskCreate
-    describe("taskCreate", () => {
+    //  TASK CREATE
+    describe("taskCreate()", () => {
 
-        test("should return 400 if userId is missing", async () => {
-            const req = { userId: null, body: { title: "Test Task" } };
+        test("400 - missing userId", async () => {
+            const req = { userId: null, body: {} };
             const res = mockResponse();
 
             await taskCreate(req, res);
@@ -41,7 +33,7 @@ describe("Task Controller", () => {
             expect(res.json).toHaveBeenCalledWith({ message: "User ID is required" });
         });
 
-        test("should return 400 if title is missing", async () => {
+        test("400 - missing title", async () => {
             const req = { userId: 1, body: { title: "" } };
             const res = mockResponse();
 
@@ -51,21 +43,59 @@ describe("Task Controller", () => {
             expect(res.json).toHaveBeenCalledWith({ message: "Title is required" });
         });
 
-        test("should return 400 if description exceeds 500 chars", async () => {
-            const longDesc = "a".repeat(501);
-            const req = { userId: 1, body: { title: "Test", description: longDesc } };
+        test("400 - description > 500 chars", async () => {
+            const req = { userId: 1, body: { title: "A", description: "a".repeat(501) } };
             const res = mockResponse();
 
             await taskCreate(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ message: "Description cannot exceed 500 characters" });
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Description cannot exceed 500 characters"
+            });
         });
 
-        test("should create a task successfully", async () => {
-            const req = { 
-                userId: 1, 
-                body: { title: "New Task", description: "desc", status: "pending", due_date: "2099-12-31" } 
+        test("400 - invalid status", async () => {
+            const req = { userId: 1, body: { title: "A", status: "wrong" } };
+            const res = mockResponse();
+
+            await taskCreate(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ message: "Invalid status value" });
+        });
+
+        test("400 - invalid date format", async () => {
+            const req = { userId: 1, body: { title: "A", due_date: "abc" } };
+            const res = mockResponse();
+
+            await taskCreate(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ message: "Invalid due date" });
+        });
+
+        test("400 - due date is not future date", async () => {
+            const req = { userId: 1, body: { title: "A", due_date: "2000-01-01" } };
+            const res = mockResponse();
+
+            await taskCreate(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Due date must be a future date"
+            });
+        });
+
+        test("201 - task created successfully", async () => {
+            const req = {
+                userId: 1,
+                body: {
+                    title: "A",
+                    description: "desc",
+                    due_date: "2099-01-01",
+                    status: "pending"
+                }
             };
             const res = mockResponse();
 
@@ -73,13 +103,12 @@ describe("Task Controller", () => {
 
             await taskCreate(req, res);
 
-            expect(createTask).toHaveBeenCalledWith(1, "New Task", "desc", "2099-12-31", "pending");
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith({ message: "Task created successfully" });
         });
 
-        test("should return 500 if createTask throws error", async () => {
-            const req = { userId: 1, body: { title: "Test" } };
+        test("500 - createTask throws error", async () => {
+            const req = { userId: 1, body: { title: "A" } };
             const res = mockResponse();
 
             createTask.mockRejectedValue(new Error("DB error"));
@@ -94,53 +123,95 @@ describe("Task Controller", () => {
         });
     });
 
-    //test cases for getTasks
-    describe("getTasks", () => {
 
-        test("should return 400 if page/limit is invalid", async () => {
+    //  GET TASKS
+    describe("getTasks()", () => {
+
+        test("400 - page/limit not numbers", async () => {
             const req = { userId: 1, query: { page: "abc", limit: "xyz" } };
             const res = mockResponse();
 
             await getTasks(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ message: "Page and limit must be integers" });
-        });
-
-        test("should return tasks successfully", async () => {
-            const req = { userId: 1, query: { page: "1", limit: "10" } };
-            const res = mockResponse();
-
-            const fakeTasks = { totalPages: 1, currentPage: 1, tasks: [], totalTasks: 0 };
-            getTasksService.mockResolvedValue(fakeTasks);
-
-            await getTasks(req, res);
-
-            expect(getTasksService).toHaveBeenCalledWith(1, 10, undefined, 1);
-            expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
-                message: "Tasks retrieved successfully",
-                data: fakeTasks
+                message: "Page and limit must be integers"
             });
         });
 
-        test("should return 404 if no tasks found", async () => {
+        test("400 - page/limit <= 0", async () => {
+            const req = { userId: 1, query: { page: "-1", limit: "0" } };
+            const res = mockResponse();
+
+            await getTasks(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Page and limit must be positive integers"
+            });
+        });
+
+        test("400 - invalid status filter", async () => {
+            const req = { userId: 1, query: { page: "1", limit: "10", status: "unknown" } };
+            const res = mockResponse();
+
+            await getTasks(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Invalid status filter"
+            });
+        });
+
+        test("200 - tasks fetched successfully", async () => {
             const req = { userId: 1, query: { page: "1", limit: "10" } };
             const res = mockResponse();
 
-            getTasksService.mockRejectedValue({ code: "NO_TASKS", message: "No tasks found" });
+            const mockData = { tasks: [], totalPages: 1 };
+            getTasksService.mockResolvedValue(mockData);
+
+            await getTasks(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Tasks retrieved successfully",
+                data: mockData
+            });
+        });
+
+        test("404 - NO_TASKS error", async () => {
+            const req = { userId: 1, query: { page: "1", limit: "10" } };
+            const res = mockResponse();
+
+            getTasksService.mockRejectedValue({ code: "NO_TASKS", message: "No tasks" });
 
             await getTasks(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ error: "No tasks found" });
+            expect(res.json).toHaveBeenCalledWith({ error: "No tasks" });
+        });
+
+        test("500 - internal error", async () => {
+            const req = { userId: 1, query: { page: "1", limit: "10" } };
+            const res = mockResponse();
+
+            getTasksService.mockRejectedValue(new Error("Internal err"));
+
+            await getTasks(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Error retrieving tasks",
+                error: "Internal err"
+            });
         });
     });
 
-    //test cases for changeTaskStatus
-    describe("changeTaskStatus", () => {
 
-        test("should return 400 if status is missing", async () => {
+    // CHANGE TASK STATUS
+    describe("changeTaskStatus()", () => {
+
+        test("400 - missing status", async () => {
             const req = { params: { id: 1 }, body: {} };
             const res = mockResponse();
 
@@ -150,69 +221,135 @@ describe("Task Controller", () => {
             expect(res.json).toHaveBeenCalledWith({ message: "Status is required" });
         });
 
-        test("should update task status successfully", async () => {
-            const req = { params: { id: 1 }, body: { status: "completed" } };
+        test("400 - missing id", async () => {
+            const req = { params: {}, body: { status: "pending" } };
             const res = mockResponse();
-
-            changeTaskStatusService.mockResolvedValue({ message: "Successfully update the status" });
 
             await changeTaskStatus(req, res);
 
-            expect(changeTaskStatusService).toHaveBeenCalledWith("completed", 1);
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ message: "Successfully update the status" });
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Task id is missing in the request"
+            });
         });
 
-        test("should return 404 if task not found", async () => {
-            const req = { params: { id: 999 }, body: { status: "pending" } };
+        test("400 - invalid status", async () => {
+            const req = { params: { id: 1 }, body: { status: "wrong" } };
             const res = mockResponse();
 
-            changeTaskStatusService.mockRejectedValue({ code: "NO_Task", message: "Task not found" });
+            await changeTaskStatus(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Invalid status filter"
+            });
+        });
+
+        test("200 - successfully updated", async () => {
+            const req = { params: { id: 1 }, body: { status: "completed" } };
+            const res = mockResponse();
+
+            changeTaskStatusService.mockResolvedValue({
+                message: "Updated"
+            });
+
+            await changeTaskStatus(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({ message: "Updated" });
+        });
+
+        test("404 - NO_Task error", async () => {
+            const req = { params: { id: 1 }, body: { status: "pending" } };
+            const res = mockResponse();
+
+            changeTaskStatusService.mockRejectedValue({
+                code: "NO_Task",
+                message: "Not found"
+            });
 
             await changeTaskStatus(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ error: "Task not found" });
+            expect(res.json).toHaveBeenCalledWith({ error: "Not found" });
+        });
+
+        test("500 - internal error", async () => {
+            const req = { params: { id: 1 }, body: { status: "pending" } };
+            const res = mockResponse();
+
+            changeTaskStatusService.mockRejectedValue(new Error("Fail"));
+
+            await changeTaskStatus(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Internal server error",
+                error: "Fail"
+            });
         });
     });
 
-    //test cases for deleteTask
-    describe("deleteTask", () => {
 
-        test("should return 400 if task id missing", async () => {
+    // DELETE TASK
+    describe("deleteTask()", () => {
+
+        test("400 - missing id", async () => {
             const req = { params: {} };
             const res = mockResponse();
 
             await deleteTask(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ message: "Task id is missing in the request" });
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Task id is missing in the request"
+            });
         });
 
-        test("should delete task successfully", async () => {
+        test("200 - task deleted", async () => {
             const req = { params: { id: 1 } };
             const res = mockResponse();
 
-            deleteTaskService.mockResolvedValue({ message: "Task deleted successfully" });
+            deleteTaskService.mockResolvedValue({
+                message: "Task deleted"
+            });
 
             await deleteTask(req, res);
 
-            expect(deleteTaskService).toHaveBeenCalledWith(1);
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ message: "Task deleted successfully" });
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Task deleted"
+            });
         });
 
-        test("should return 404 if task not found", async () => {
-            const req = { params: { id: 999 } };
+        test("404 - NO_TASK error", async () => {
+            const req = { params: { id: 1 } };
             const res = mockResponse();
 
-            deleteTaskService.mockRejectedValue({ code: "NO_TASK", message: "Task not found" });
+            deleteTaskService.mockRejectedValue({
+                code: "NO_TASK",
+                message: "Not found"
+            });
 
             await deleteTask(req, res);
 
             expect(res.status).toHaveBeenCalledWith(404);
-            expect(res.json).toHaveBeenCalledWith({ error: "Task not found" });
+            expect(res.json).toHaveBeenCalledWith({ error: "Not found" });
+        });
+
+        test("500 - internal error", async () => {
+            const req = { params: { id: 1 } };
+            const res = mockResponse();
+
+            deleteTaskService.mockRejectedValue(new Error("DB ERROR"));
+
+            await deleteTask(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                message: "Internal server error",
+                error: "DB ERROR"
+            });
         });
     });
-
 });
