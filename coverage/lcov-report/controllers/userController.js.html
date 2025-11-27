@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for authMiddlewares/authMiddleware.js</title>
+    <title>Code coverage report for controllers/userController.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,20 +19,20 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">authMiddlewares</a> authMiddleware.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">controllers</a> userController.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/15</span>
+                <span class='fraction'>18/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/15</span>
+                <span class='fraction'>18/18</span>
             </div>
         
             
@@ -86,53 +86,71 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const jwt = require("jsonwebtoken")
-require("dotenv").config()
-const authMiddleware = (req,res,next) =&gt;{
-    const authHeader = req.headers['authorization'];
-    if(!authHeader)
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const {updateUserDetailsService} = require("../services/userServices")
+const updateUser = async(req,res) =&gt;{
+    const userId = req.userId
+    const {email,password} = req.body
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!email || !password)
     {
-        return  res.status(401).json({message:"Authorization header missing"});
+        return res.status(400).json({message:"Username and password are required"})
     }
-    const token = authHeader.split(' ')[1];
-    if(!token)
+    if(password.length&lt;10)
     {
-        return res.status(401).json({message:"Token missing"});
+        return res.status(400).json({message:"Password must be at least 10 characters long"});
+    }
+    if(!emailRegex.test(email)){
+        return res.status(400).json({message:"Invalid email format"});
     }
     try{
-        const decoded = jwt.verify(token,process.env.JWT_SECRET)
-        req.userId = decoded.id
-        next()
+        const successMessage = await updateUserDetailsService(email,password,userId)
+        return res.status(200).json(successMessage)
     }catch(err)
     {
-        return res.status(401).json({message:"Invalid or expired token"});
+        if(err.code ==="NO_USER")
+        {
+            return res.status(404).json({error:err.message})
+        }
+        return res.status(500).json({message:"Internal server error",error:err.message})
     }
 }
 &nbsp;
-module.exports = {authMiddleware}</pre></td></tr></table></pre>
+module.exports = {updateUser}</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
