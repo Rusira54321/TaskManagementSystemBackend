@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1764237627042" clover="3.2.0">
-  <project timestamp="1764237627043" name="All files">
-    <metrics statements="70" coveredstatements="69" conditionals="18" coveredconditionals="17" methods="7" coveredmethods="7" elements="95" coveredelements="93" complexity="0" loc="70" ncloc="70" packages="2" files="3" classes="3"/>
+<coverage generated="1764238454892" clover="3.2.0">
+  <project timestamp="1764238454892" name="All files">
+    <metrics statements="83" coveredstatements="82" conditionals="20" coveredconditionals="19" methods="8" coveredmethods="8" elements="111" coveredelements="109" complexity="0" loc="83" ncloc="83" packages="2" files="4" classes="4"/>
     <package name="authMiddlewares">
       <metrics statements="15" coveredstatements="15" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
       <file name="authMiddleware.js" path="C:\Users\Admin\OneDrive\Desktop\React-projects\TaskManagerSystem\backend\authMiddlewares\authMiddleware.js">
@@ -24,7 +24,7 @@
       </file>
     </package>
     <package name="services">
-      <metrics statements="55" coveredstatements="54" conditionals="14" coveredconditionals="13" methods="6" coveredmethods="6"/>
+      <metrics statements="68" coveredstatements="67" conditionals="16" coveredconditionals="15" methods="7" coveredmethods="7"/>
       <file name="authServices.js" path="C:\Users\Admin\OneDrive\Desktop\React-projects\TaskManagerSystem\backend\services\authServices.js">
         <metrics statements="22" coveredstatements="22" conditionals="6" coveredconditionals="6" methods="2" coveredmethods="2"/>
         <line num="1" count="1" type="stmt"/>
@@ -85,6 +85,22 @@
         <line num="70" count="1" type="stmt"/>
         <line num="71" count="1" type="stmt"/>
         <line num="75" count="1" type="stmt"/>
+      </file>
+      <file name="userServices.js" path="C:\Users\Admin\OneDrive\Desktop\React-projects\TaskManagerSystem\backend\services\userServices.js">
+        <metrics statements="13" coveredstatements="13" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="9" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
       </file>
     </package>
   </project>
