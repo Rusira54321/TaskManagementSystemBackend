@@ -132,7 +132,7 @@ A fully documented Postman collection is included.
 
 You can import it from:
 
-postman/TaskManagerAPI.postman_collection.json
+https://github.com/Rusira54321/TaskManagementSystemBackend/blob/main/postman/TaskManagerCollection.json
 
 
 The documentation includes:
