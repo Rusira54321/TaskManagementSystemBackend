@@ -28,7 +28,7 @@ Includes JWT authentication, Postman documentation, and Jest unit tests.
     💡 Clean folder structure & production-ready code
 
 📁 Project Structure
-
+```
 TaskManagerAPI
 ├── controllers/
 │   ├── authController.js
@@ -68,10 +68,10 @@ TaskManagerAPI
 ├── index.js
 ├── .gitignore
 └── README.md
-
+```
 
 🛠️ Tech Stack
-
+```
 Node.js + Express.js
 
 PostgreSQL + Sequelize
@@ -81,8 +81,9 @@ JWT Authentication
 Jest for testing
 
 Postman for API documentation
-
+```
 ⚙️ Installation & Setup
+```
 1️⃣ Clone the repository
 git clone https://github.com/Rusira54321/TaskManagementSystemBackend.git
 
@@ -119,20 +120,19 @@ Server runs at:
 🧪 Running Unit Tests
 npm test
 
-
 58 unit tests included
 
 90%+ coverage
 
 Tests for Auth, User, and Task services + controllers
-
+```
 📬 Postman Documentation
-
+```
 A fully documented Postman collection is included.
 
 You can import it from:
 
-postman/TaskManagerAPI.postman_collection.json
+https://github.com/Rusira54321/TaskManagementSystemBackend/blob/main/postman/TaskManagerCollection.json
 
 
 The documentation includes:
@@ -143,7 +143,9 @@ The documentation includes:
 ✔ Example requests
 ✔ Pagination & filtering
 
+```
 🔐 Authentication Flow
+```
 Register → Login → Use JWT
 
 Register
@@ -164,9 +166,9 @@ Returns:
 Use token in all protected routes
 
 Authorization: Bearer JWT_TOKEN_HERE
-
+```
 📝 API Endpoints Overview
-
+```
 🔐 Auth
 Method	Endpoint	                    Description
 POST	{{Base_URL}}/api/auth/register	Register a new user
@@ -184,9 +186,9 @@ PUT	    {{Base_URL}}/api/tasks/updateStatus/:id	    Update task status
 DELETE	{{Base_URL}}/api/tasks/delete/:id	        Delete a task
 
 Full details available in the Postman collection.
-
+```
 🧱 Error Handling
-
+```
 The API returns consistent JSON error structures such as:
 
 {
@@ -202,9 +204,9 @@ or
 
 
 This improves frontend debugging and developer experience.
-
+```
 🎯 Why This Project Is Recruiter-Friendly
-
+```
 Clean architecture (Services + Controllers + Middleware)
 
 High test coverage
@@ -216,12 +218,13 @@ Follows real-world API design patterns
 Uses industry-standard technologies
 
 Easy to read, maintain, and extend
-
+```
 🤝 Contributing
-
+```
 Pull requests are welcome!
 Feel free to fork the repo and submit improvements.
-
+```
 📄 License
-
+```
 This project is open-source under the MIT License.
+```
